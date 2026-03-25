@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './index.css'
+import confetti from 'canvas-confetti' // 축하 폭죽 효과 라이브러리
 
 // 할 일 데이터 구조 정의
 interface Todo {
@@ -46,11 +47,24 @@ function App() {
     setInputValue(''); // 입력창 초기화
   };
 
-  // 할 일 완료 상태 토글 함수
+  // 할 일 완료 상태 토글 함수 (완료 시 폭죽 효과 추가)
   const toggleTodo = (id: number) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ));
+    setTodos(todos.map(todo => {
+      if (todo.id === id) {
+        const nextStatus = !todo.completed;
+        // 완료 상태로 변경될 때만 폭죽 효과 실행! 🎉
+        if (nextStatus) {
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#646cff', '#00ff00', '#ff0000', '#ffd700']
+          });
+        }
+        return { ...todo, completed: nextStatus };
+      }
+      return todo;
+    }));
   };
 
   // 할 일 삭제 함수
@@ -78,22 +92,22 @@ function App() {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && addTodo()}
         />
-        <button onClick={addTodo} style={{ backgroundColor: '#646cff' }}>추가</button>
+        <button onClick={addTodo}>추가</button>
       </div>
       
       {/* 필터 버튼 섹션 */}
       <div className="filters">
         <button 
           onClick={() => setFilter('all')}
-          style={{ borderColor: filter === 'all' ? '#646cff' : 'transparent' }}
+          className={filter === 'all' ? 'active' : ''}
         >전체</button>
         <button 
           onClick={() => setFilter('active')}
-          style={{ borderColor: filter === 'active' ? '#646cff' : 'transparent' }}
+          className={filter === 'active' ? 'active' : ''}
         >진행 중</button>
         <button 
           onClick={() => setFilter('completed')}
-          style={{ borderColor: filter === 'completed' ? '#646cff' : 'transparent' }}
+          className={filter === 'completed' ? 'active' : ''}
         >완료됨</button>
       </div>
 
@@ -108,7 +122,8 @@ function App() {
             />
             <span style={{ 
               textDecoration: todo.completed ? 'line-through' : 'none',
-              opacity: todo.completed ? 0.6 : 1
+              opacity: todo.completed ? 0.4 : 1,
+              color: todo.completed ? '#888' : '#333'
             }}>
               {todo.text}
             </span>
@@ -116,6 +131,11 @@ function App() {
           </li>
         ))}
       </ul>
+      
+      {/* 바닥글 정보 */}
+      <footer style={{ marginTop: '2rem', fontSize: '0.8rem', color: '#999' }}>
+        할 일을 완료하고 폭죽을 터뜨려보세요! 🎊
+      </footer>
     </div>
   )
 }
